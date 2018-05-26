@@ -48,7 +48,7 @@ sh download_and_convert_voc2012.sh
 cd "${CURRENT_DIR}"
 
 # Set up the working directories.
-PASCAL_FOLDER="pascal_voc_seg"
+PASCAL_FOLDER="road_dataset"
 EXP_FOLDER="exp/train_on_trainval_set"
 INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${PASCAL_FOLDER}/init_models"
 TRAIN_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${PASCAL_FOLDER}/${EXP_FOLDER}/train"
