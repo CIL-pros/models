@@ -49,7 +49,7 @@ cd "${CURRENT_DIR}"
 
 # Set up the working directories.
 ROAD_FOLDER="road_seg"
-EXP_FOLDER="exp/train_on_trainval_set"
+EXP_FOLDER="exp/train_seg_th"
 INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/init_models"
 TRAIN_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/${EXP_FOLDER}/train"
 EVAL_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/${EXP_FOLDER}/eval"
@@ -72,7 +72,7 @@ cd "${CURRENT_DIR}"
 ROAD_DATASET="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/tfrecord"
 
 # Train 10 iterations.
-NUM_ITERATIONS=10
+NUM_ITERATIONS=10000
 python "${WORK_DIR}"/train.py \
   --logtostderr \
   --train_split="train" \
@@ -82,9 +82,9 @@ python "${WORK_DIR}"/train.py \
   --atrous_rates=18 \
   --output_stride=16 \
   --decoder_output_stride=4 \
-  --train_crop_size=513 \
-  --train_crop_size=513 \
-  --train_batch_size=4 \
+  --train_crop_size=400 \
+  --train_crop_size=400 \
+  --train_batch_size=8 \
   --training_number_of_steps="${NUM_ITERATIONS}" \
   --fine_tune_batch_norm=true \
   --tf_initial_checkpoint="${INIT_FOLDER}/deeplabv3_pascal_train_aug/model.ckpt" \
@@ -105,15 +105,14 @@ python "${WORK_DIR}"/eval.py \
   --atrous_rates=18 \
   --output_stride=16 \
   --decoder_output_stride=4 \
-  --eval_crop_size=513 \
-  --eval_crop_size=513 \
+  --eval_crop_size=400 \
+  --eval_crop_size=400 \
   --checkpoint_dir="${TRAIN_LOGDIR}" \
   --eval_logdir="${EVAL_LOGDIR}" \
   --dataset="${ROAD_FOLDER}" \
   --dataset_dir="${ROAD_DATASET}" \
   --max_number_of_evaluations=1
 
-exit
 
 # Visualize the results.
 python "${WORK_DIR}"/vis.py \
@@ -125,10 +124,11 @@ python "${WORK_DIR}"/vis.py \
   --atrous_rates=18 \
   --output_stride=16 \
   --decoder_output_stride=4 \
-  --vis_crop_size=513 \
-  --vis_crop_size=513 \
+  --vis_crop_size=400 \
+  --vis_crop_size=400 \
   --checkpoint_dir="${TRAIN_LOGDIR}" \
   --vis_logdir="${VIS_LOGDIR}" \
+  --dataset="${ROAD_FOLDER}" \
   --dataset_dir="${ROAD_DATASET}" \
   --max_number_of_iterations=1
 

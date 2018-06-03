@@ -48,7 +48,10 @@ def _remove_colormap(filename):
   Returns:
     Annotation without color map.
   """
-  return np.array(Image.open(filename))
+  annotation = np.array(Image.open(filename), dtype=np.uint8)
+  annotation[annotation >= 2] = 1
+  assert(np.all(annotation < 2))
+  return annotation
 
 
 def _save_annotation(annotation, filename):
