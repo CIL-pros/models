@@ -14,7 +14,7 @@
 # limitations under the License.
 # ==============================================================================
 #
-# Script to download and preprocess the PASCAL VOC 2012 dataset.
+# Script to download and preprocess the road dataset.
 #
 # Usage:
 #   bash ./download_and_convert_voc2012.sh
@@ -47,26 +47,28 @@ download_and_uncompress() {
 
   if [ ! -f "${FILENAME}" ]; then
     echo "Downloading ${FILENAME} to ${WORK_DIR}"
-    wget -nd -c "${BASE_URL}/${FILENAME}"
+    wget -nd -c "${BASE_URL}" -O ${FILENAME}
   fi
   echo "Uncompressing ${FILENAME}"
-  tar -xf "${FILENAME}"
+  unzip "${FILENAME}"
 }
 
 # Download the images.
-BASE_URL="http://host.robots.ox.ac.uk/pascal/VOC/voc2012/"
-FILENAME="VOCtrainval_11-May-2012.tar"
+BASE_URL="https://drive.google.com/uc?export=download&id=1XU0YQkH5jEmg7OBXsH6uX1shCd7a2gRD"
+FILENAME="training.zip"
 
-#download_and_uncompress "${BASE_URL}" "${FILENAME}"
+download_and_uncompress "${BASE_URL}" "${FILENAME}"
 
 cd "${CURRENT_DIR}"
 
-# Root path for PASCAL VOC 2012 dataset.
+# Root path for road dataset.
 ROAD_ROOT="${WORK_DIR}/RoadsDevKit"
 
 # Remove the colormap in the ground truth annotations.
 SEG_FOLDER="${ROAD_ROOT}/SegmentationClass"
 SEMANTIC_SEG_FOLDER="${ROAD_ROOT}/SegmentationClassRaw"
+
+mkdir -p ${SEG_FOLDER} ${SEMANTIC_SEG_FOLDER}
 
 echo $PWD
 cp -r "${WORK_DIR}/training/groundtruth/." "${SEG_FOLDER}"
@@ -84,12 +86,14 @@ mkdir -p "${OUTPUT_DIR}"
 IMAGE_FOLDER="${ROAD_ROOT}/JPEGImages"
 LIST_FOLDER="${ROAD_ROOT}/ImageSets/Segmentation"
 
-cp -r "${WORK_DIR}/training/images/." "${IMAGE_FOLDER}"
-#cp -r "${WORK_DIR}/test_images/." "${IMAGE_FOLDER}"
-ls "${WORK_DIR}/training/images/" | sed -e 's/\.png$//'  > "${LIST_FOLDER}/training.txt"
-#ls "${WORK_DIR}/test_images/" | sed -e 's/\.png$//' > "${LIST_FOLDER}/val.txt"
+mkdir -p ${IMAGE_FOLDER} ${LIST_FOLDER}
 
-echo "Converting ROAD VOC 2012 dataset..."
+cp -r "${WORK_DIR}/training/images/." "${IMAGE_FOLDER}"
+touch "${LIST_FOLDER}/train.txt" ${LIST_FOLDER}/trainval.txt
+ls "${WORK_DIR}/training/images/" | head -80 | sed -e 's/\.png$//'  > "${LIST_FOLDER}/train.txt"
+ls "${WORK_DIR}/training/images/" | tail -20 | sed -e 's/\.png$//'  > "${LIST_FOLDER}/trainval.txt"
+
+echo "Converting ROAD dataset..."
 python ./build_road_data.py \
   --image_folder="${IMAGE_FOLDER}" \
   --semantic_segmentation_folder="${SEMANTIC_SEG_FOLDER}" \
