@@ -50,53 +50,103 @@ download_and_uncompress() {
     wget -nd -c "${BASE_URL}" -O ${FILENAME}
   fi
   echo "Uncompressing ${FILENAME}"
-  unzip "${FILENAME}"
+  if [ ${FILENAME} = "training.zip" ]; then
+    unzip "${FILENAME}"
+  elif [ ${FILENAME} = "test_images.tar.gz" ]; then
+    tar -xzf "${FILENAME}"
+  fi
+}
+
+build_data() {
+    local TRAIN_OR_TEST=${1}
+    local ROAD_ROOT=${2}
+    local RAW_ROOT=${3}
+    local TFRECORD_DIR=${4}
+
+    # Remove the colormap in the ground truth annotations.
+    SEG_FOLDER="${ROAD_ROOT}/SegmentationClass"
+    SEMANTIC_SEG_FOLDER="${ROAD_ROOT}/SegmentationClassRaw"
+
+    mkdir -p ${SEG_FOLDER} ${SEMANTIC_SEG_FOLDER}
+
+    echo $PWD
+    cp -r "${RAW_ROOT}/groundtruth/." "${SEG_FOLDER}"
+
+    echo "Removing the color map in ground truth annotations..."
+    python ./remove_gt_colormap.py \
+      --original_gt_folder="${SEG_FOLDER}" \
+      --output_dir="${SEMANTIC_SEG_FOLDER}"
+
+    # Build TFRecords of the dataset.
+    # First, create output directory for storing TFRecords.
+    mkdir -p "${TFRECORD_DIR}"
+
+    IMAGE_FOLDER="${ROAD_ROOT}/JPEGImages"
+    LIST_FOLDER="${ROAD_ROOT}/ImageSets/Segmentation"
+
+    mkdir -p ${IMAGE_FOLDER} ${LIST_FOLDER}
+
+    cp -r "${RAW_ROOT}/images/." "${IMAGE_FOLDER}"
+
+    if [ "$TRAIN_OR_TEST" = "train" ]; then
+        touch "${LIST_FOLDER}/train.txt" ${LIST_FOLDER}/trainval.txt
+        ls "${RAW_ROOT}/images/" | head -80 | sed -e 's/\.png$//'  > "${LIST_FOLDER}/train.txt"
+        ls "${RAW_ROOT}/images/" | tail -20 | sed -e 's/\.png$//'  > "${LIST_FOLDER}/trainval.txt"
+    elif [ "$TRAIN_OR_TEST" = "test" ]; then
+        touch "${LIST_FOLDER}/test.txt"
+        ls "${RAW_ROOT}/images/" | sed -e 's/\.png$//'  > "${LIST_FOLDER}/test.txt"
+    fi
+
+    echo "Converting ROAD dataset..."
+    python ./build_road_data.py \
+      --image_folder="${IMAGE_FOLDER}" \
+      --semantic_segmentation_folder="${SEMANTIC_SEG_FOLDER}" \
+      --list_folder="${LIST_FOLDER}" \
+      --image_format="png" \
+      --output_dir="${TFRECORD_DIR}"
 }
 
 # Download the images.
-BASE_URL="https://drive.google.com/uc?export=download&id=1XU0YQkH5jEmg7OBXsH6uX1shCd7a2gRD"
-FILENAME="training.zip"
+BASE_TRAIN_URL="https://drive.google.com/uc?export=download&id=1XU0YQkH5jEmg7OBXsH6uX1shCd7a2gRD"
+TRAIN_FILENAME="training.zip"
 
-download_and_uncompress "${BASE_URL}" "${FILENAME}"
+download_and_uncompress "${BASE_TRAIN_URL}" "${TRAIN_FILENAME}"
+
+echo "Downloaded and uncompressed train images"
+
+BASE_TEST_URL="https://drive.google.com/uc?export=download&id=195--p90lFpiqcdtNGpUq2RsGsKM-dZ5j"
+TEST_FILENAME="test_images.tar.gz"
+
+download_and_uncompress "${BASE_TEST_URL}" "${TEST_FILENAME}"
+
+echo "Downloaded and uncompressed test images"
 
 cd "${CURRENT_DIR}"
 
 # Root path for road dataset.
-ROAD_ROOT="${WORK_DIR}/RoadsDevKit"
+ROAD_TRAIN_ROOT="${WORK_DIR}/RoadsTrainKit"
+TRAIN_RAW_ROOT="${WORK_DIR}/training"
+TF_TRAIN_RECORD_DIR="${WORK_DIR}/tfrecord/train"
 
-# Remove the colormap in the ground truth annotations.
-SEG_FOLDER="${ROAD_ROOT}/SegmentationClass"
-SEMANTIC_SEG_FOLDER="${ROAD_ROOT}/SegmentationClassRaw"
+build_data "train" "${ROAD_TRAIN_ROOT}" "${TRAIN_RAW_ROOT}" "${TF_TRAIN_RECORD_DIR}"
 
-mkdir -p ${SEG_FOLDER} ${SEMANTIC_SEG_FOLDER}
+echo "Built training data"
 
-echo $PWD
-cp -r "${WORK_DIR}/training/groundtruth/." "${SEG_FOLDER}"
+TEST_RAW_ROOT="${WORK_DIR}/testing"
+TEST_IMAGES_RAW="${TEST_RAW_ROOT}/images"
+TEST_LABELS_RAW="${TEST_RAW_ROOT}/groundtruth"
 
-echo "Removing the color map in ground truth annotations..."
-python ./remove_gt_colormap.py \
-  --original_gt_folder="${SEG_FOLDER}" \
-  --output_dir="${SEMANTIC_SEG_FOLDER}"
+mkdir -p ${TEST_IMAGES_RAW} ${TEST_LABELS_RAW}
+cp -r "${WORK_DIR}/test_images/." "${TEST_IMAGES_RAW}"
 
-# Build TFRecords of the dataset.
-# First, create output directory for storing TFRecords.
-OUTPUT_DIR="${WORK_DIR}/tfrecord"
-mkdir -p "${OUTPUT_DIR}"
+for image_name in ${TEST_IMAGES_RAW}/*.png; do
+    convert "${image_name}" -resize 400x400! "${image_name}"
+    convert -size 400x400 xc:black "${TEST_LABELS_RAW}/$(basename ${image_name})"
+done
 
-IMAGE_FOLDER="${ROAD_ROOT}/JPEGImages"
-LIST_FOLDER="${ROAD_ROOT}/ImageSets/Segmentation"
+ROAD_TEST_ROOT="${WORK_DIR}/RoadsTestKit"
+TF_TEST_RECORD_DIR="${WORK_DIR}/tfrecord/test"
 
-mkdir -p ${IMAGE_FOLDER} ${LIST_FOLDER}
+build_data "test" "${ROAD_TEST_ROOT}" "${TEST_RAW_ROOT}" "${TF_TEST_RECORD_DIR}"
 
-cp -r "${WORK_DIR}/training/images/." "${IMAGE_FOLDER}"
-touch "${LIST_FOLDER}/train.txt" ${LIST_FOLDER}/trainval.txt
-ls "${WORK_DIR}/training/images/" | head -80 | sed -e 's/\.png$//'  > "${LIST_FOLDER}/train.txt"
-ls "${WORK_DIR}/training/images/" | tail -20 | sed -e 's/\.png$//'  > "${LIST_FOLDER}/trainval.txt"
-
-echo "Converting ROAD dataset..."
-python ./build_road_data.py \
-  --image_folder="${IMAGE_FOLDER}" \
-  --semantic_segmentation_folder="${SEMANTIC_SEG_FOLDER}" \
-  --list_folder="${LIST_FOLDER}" \
-  --image_format="png" \
-  --output_dir="${OUTPUT_DIR}"
+echo "Built testing data"

@@ -87,6 +87,7 @@ _ROAD_INFORMATION = DatasetDescriptor(
     splits_to_sizes={
         'train': 80,
         'trainval': 20,
+        'test': 94
     },
     num_classes=2,
     ignore_label=255,
