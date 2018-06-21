@@ -72,7 +72,7 @@ cd "${CURRENT_DIR}"
 ROAD_DATASET="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/tfrecord"
 
 # Train 10 iterations.
-NUM_ITERATIONS=10000
+NUM_ITERATIONS=15000
 python "${WORK_DIR}"/train.py \
   --logtostderr \
   --train_split="train" \
