@@ -49,7 +49,7 @@ cd "${CURRENT_DIR}"
 
 # Set up the working directories.
 ROAD_FOLDER="road_seg"
-EXP_FOLDER="exp/train_seg_th"
+EXP_FOLDER="exp/train_seg_with_test"
 INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/init_models"
 TRAIN_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/${EXP_FOLDER}/train"
 EVAL_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/${EXP_FOLDER}/eval"
@@ -73,7 +73,7 @@ ROAD_TRAIN_DATASET="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/tfrecord/train"
 ROAD_TEST_DATASET="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/tfrecord/test"
 
 # Train 10 iterations.
-NUM_ITERATIONS=15000
+NUM_ITERATIONS=20000
 python "${WORK_DIR}"/train.py \
   --logtostderr \
   --train_split="train" \

@@ -140,8 +140,9 @@ mkdir -p ${TEST_IMAGES_RAW} ${TEST_LABELS_RAW}
 cp -r "${WORK_DIR}/test_images/." "${TEST_IMAGES_RAW}"
 
 for image_name in ${TEST_IMAGES_RAW}/*.png; do
-    convert "${image_name}" -resize 400x400! "${image_name}"
-    convert -size 400x400 xc:black "${TEST_LABELS_RAW}/$(basename ${image_name})"
+    python resize_and_create_black_labels.py "${image_name}" "${image_name}" "${TEST_LABELS_RAW}/$(basename ${image_name})" 
+    # convert "${image_name}" -resize 400x400! "${image_name}"
+    # convert -size 400x400 xc:black "${TEST_LABELS_RAW}/$(basename ${image_name})"
 done
 
 ROAD_TEST_ROOT="${WORK_DIR}/RoadsTestKit"
