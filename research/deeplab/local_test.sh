@@ -91,7 +91,7 @@ python "${WORK_DIR}"/train.py \
   --tf_initial_checkpoint="${INIT_FOLDER}/deeplabv3_pascal_train_aug/model.ckpt" \
   --train_logdir="${TRAIN_LOGDIR}" \
   --dataset="${ROAD_FOLDER}" \
-  --dataset_dir="${ROAD_DATASET}" \
+  --dataset_dir="${ROAD_TRAIN_DATASET}" \
   --initialize_last_layer=False
 
 # Run evaluation. This performs eval over the full val split (1449 images) and
@@ -111,7 +111,7 @@ python "${WORK_DIR}"/eval.py \
   --checkpoint_dir="${TRAIN_LOGDIR}" \
   --eval_logdir="${EVAL_LOGDIR}" \
   --dataset="${ROAD_FOLDER}" \
-  --dataset_dir="${ROAD_DATASET}" \
+  --dataset_dir="${ROAD_TRAIN_DATASET}" \
   --max_number_of_evaluations=1
 
 
