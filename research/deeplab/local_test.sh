@@ -42,7 +42,7 @@ WORK_DIR="${CURRENT_DIR}/deeplab"
 # Go to datasets folder and download PASCAL VOC 2012 segmentation dataset.
 DATASET_DIR="datasets"
 cd "${WORK_DIR}/${DATASET_DIR}"
-# sh download_and_convert_road.sh
+sh download_and_convert_road.sh
 
 # Go back to original directory.
 cd "${CURRENT_DIR}"
@@ -73,7 +73,7 @@ ROAD_TRAIN_DATASET="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/tfrecord/train"
 ROAD_TEST_DATASET="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/tfrecord/test"
 
 # Train 10 iterations.
-NUM_ITERATIONS=22000
+NUM_ITERATIONS=100000
 python "${WORK_DIR}"/train.py \
   --logtostderr \
   --train_split="train" \

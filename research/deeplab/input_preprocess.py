@@ -101,6 +101,10 @@ def preprocess_image_and_label(image,
       processed_image, label, scale)
   processed_image.set_shape([None, None, 3])
 
+  if label is not None:
+    processed_image, label = preprocess_utils.random_rotate(
+        [processed_image, label])
+
   # Pad image and label to have dimensions >= [crop_height, crop_width]
   image_shape = tf.shape(processed_image)
   image_height = image_shape[0]

@@ -248,6 +248,27 @@ def random_crop(image_list, crop_height, crop_width):
   return [_crop(image, offset_height, offset_width,
                 crop_height, crop_width) for image in image_list]
 
+def random_rotate(image_list, min_angle=-90, max_angle=90):
+  """Rotates the given list of images.
+  The function applies the same rotation to each image in the list. This can be
+  effectively applied when there are multiple image inputs of the same
+  dimension such as:
+    image, depths, normals = random_crop([image, depths, normals], -90, 90)
+  Args:
+    image_list: a list of image tensors of the same dimension but possibly
+      varying channel.
+    min_angle: the minimum angle for rotation, default -90
+    crop_width: the maximum angle for rotation, default 90
+  Returns:
+    the image_list with rotated images.
+  """
+  if not image_list:
+    raise ValueError('Empty image_list.')
+
+  angle = tf.random_uniform(
+      [1], minval=min_angle, maxval=max_angle, dtype=tf.float32)
+
+  return [tf.contrib.image.rotate(image, angle) for image in image_list]
 
 def get_random_scale(min_scale_factor, max_scale_factor, step_size):
   """Gets a random scale value.

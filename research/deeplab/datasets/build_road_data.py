@@ -92,7 +92,8 @@ def _convert_dataset(dataset_split):
   """
   dataset = os.path.basename(dataset_split)[:-4]
   sys.stdout.write('Processing ' + dataset)
-  filenames = [x.strip('\n') for x in open(dataset_split, 'r')]
+  filenames = sorted([x.strip('\n') for x in open(dataset_split, 'r')])
+  print(filenames)
   num_images = len(filenames)
   num_per_shard = int(math.ceil(num_images / float(_NUM_SHARDS)))
 
