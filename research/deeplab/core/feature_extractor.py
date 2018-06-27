@@ -20,7 +20,17 @@ import tensorflow as tf
 from deeplab.core import xception
 from nets.mobilenet import mobilenet as mobilenet_lib
 from nets.mobilenet import mobilenet_v2
-
+#Lines added by Andisheh
+#import sys, os.path
+#sys.path.append(os.path.abspath('../'))
+#from train import FLAGS
+#flags = tf.app.flags
+#FLAGS = flags.FLAGS
+#Need to somehow import these two parameteters (batch_size and crop_size) below from train.py file
+batch_size = 50
+crop_size = [400, 400]
+print(batch_size, crop_size)
+#End of lines added by Andisheh
 
 slim = tf.contrib.slim
 
@@ -42,7 +52,7 @@ def _mobilenet_v2(net,
       for all convolution ops. The value must be greater than zero. Typical
       usage will be to set this value in (0, 1) to reduce the number of
       parameters or computation cost of the model.
-    output_stride: An integer that specifies the requested ratio of input to
+      output_stride: An integer that specifies the requested ratio of input to
       output spatial resolution. If not None, then we invoke atrous convolution
       if necessary to prevent the network from reducing the spatial resolution
       of the activation maps. Allowed values are 8 (accurate fully convolutional
@@ -113,7 +123,53 @@ def _preprocess_subtract_imagenet_mean(inputs):
 
 def _preprocess_zero_mean_unit_range(inputs):
   """Map image values from [0, 255] to [-1, 1]."""
-  return (2.0 / 255.0) * tf.to_float(inputs) - 1.0
+#Lines Added by Andisheh
+  #Input is of shape [batch,height,width,channels]
+  print("Andisheh's funciton")
+  print(inputs)
+  inputs = normalized_inputs =  (2.0 / 255.0) * tf.to_float(inputs) - 1.0
+  print(normalized_inputs)
+  #Create tensor of shape [channel,batch,height,width]
+  normalized_inputs = tf.transpose(normalized_inputs,perm = [3,0,1,2])
+  print(normalized_inputs)
+  #Flatten tensor to create a tensor of shape[channel,batch,height*width]
+  normalized_inputs = tf.reshape(normalized_inputs,[3,batch_size,-1]) 
+  print(normalized_inputs)
+  D, U, V = tf.svd(normalized_inputs)
+  print(D,U,V)
+  # Here min (batch, height*width ) = batch
+  #D is of shape [channel, batch] and contains singular values
+  #U is of shape [channel, batch, batch] V is of shape [channel, height*width, batch ] 
+  #square singularvalues to get eigenvalues and turn D into a diagonal Matrix of size (channel, batch,batch)
+  diagonalD = tf.matmul (tf.matrix_diag(D),tf.matrix_diag(D)) / (batch_size)  
+  print(diagonalD)
+  #Principal directions scaled by eigenvalues. A matrix of shape (channel,height*width,batch)
+  directions = tf.matmul(V,diagonalD)
+  print(directions)
+  #repeat directions for usage below. directions will be of shape (batch_size,channel,height*width,batch)
+  directions = tf.reshape(tf.tile(directions,[batch_size,1,1]), (3,batch_size,crop_size[0]*crop_size[1],batch_size))
+  print(directions)
+  directions = tf.transpose(directions, [1,0,2,3])
+  print(directions)
+  #Create normal vector of shape (batch,channel,batch,1) to multiply directions by
+  normal = tf.random_normal(shape=[batch_size,3,batch_size,1],mean=0.0,stddev=0.1)
+  print(normal)
+  #Remember directions is tensor of shape (batch,channel, height*width, batch)
+  noise = tf.squeeze(tf.matmul(directions,normal))
+  print(noise)
+  #Noise is now of shape (batch,channel,height*width)
+  noise = tf.reshape(noise,[batch_size,3,crop_size[0],crop_size[1]])
+  print(noise)
+  #Noise is now of shape (batch, channel, height, width)
+  noise = tf.transpose(noise,[0,2,3,1])
+  #Noise is now of shape (batch,hwight,width,channel)
+  print(noise)
+  print(normalized_inputs)
+  inputs = inputs + noise 
+  print("End of lines added by Andisheh in file feature_extractor.py")
+  return inputs
+#End of lines added by Andisheh
+#  return (2.0 / 255.0) * tf.to_float(inputs) - 1.0
 
 
 _PREPROCESS_FN = {

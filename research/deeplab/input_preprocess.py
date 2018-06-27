@@ -80,7 +80,7 @@ def preprocess_image_and_label(image,
 
   if label is not None:
     label = tf.cast(label, tf.int32)
-
+  
   # Resize image and label to the desired range.
   if min_resize_value is not None or max_resize_value is not None:
     [processed_image, label] = (
@@ -100,7 +100,8 @@ def preprocess_image_and_label(image,
   processed_image, label = preprocess_utils.randomly_scale_image_and_label(
       processed_image, label, scale)
   processed_image.set_shape([None, None, 3])
-
+  
+  #Nikola's random rotate
   if label is not None:
     processed_image, label = preprocess_utils.random_rotate(
         [processed_image, label])
