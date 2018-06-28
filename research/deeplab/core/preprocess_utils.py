@@ -258,7 +258,7 @@ def random_rotate(image_list, min_angle=-90, max_angle=90):
     image_list: a list of image tensors of the same dimension but possibly
       varying channel.
     min_angle: the minimum angle for rotation, default -90
-    crop_width: the maximum angle for rotation, default 90
+    max_angle: the maximum angle for rotation, default 90
   Returns:
     the image_list with rotated images.
   """
