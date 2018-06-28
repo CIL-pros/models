@@ -27,8 +27,8 @@ from nets.mobilenet import mobilenet_v2
 #flags = tf.app.flags
 #FLAGS = flags.FLAGS
 #Need to somehow import these two parameteters (batch_size and crop_size) below from train.py file
-batch_size = 50
-crop_size = [400, 400]
+batch_size = 32
+crop_size = [608, 608]
 print(batch_size, crop_size)
 #End of lines added by Andisheh
 
