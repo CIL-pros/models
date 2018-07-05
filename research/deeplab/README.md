@@ -15,6 +15,8 @@ Here are the instructions how to set up the different experiments:
 
 Additionally, you can set different parameters, such as the number of training iterations inside of `local_test.sh`.
 
+The model has random rotations turned on by default. In order to turn them off, you need to comment out the lines 104-106 in the file `input_preprocess.py`.
+
 # DeepLab: Deep Labelling for Semantic Image Segmentation
 
 DeepLab is a state-of-art deep learning model for semantic image segmentation,
