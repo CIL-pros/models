@@ -27,8 +27,8 @@ from nets.mobilenet import mobilenet_v2
 #flags = tf.app.flags
 #FLAGS = flags.FLAGS
 #Need to somehow import these two parameteters (batch_size and crop_size) below from train.py file
-batch_size = 32
-crop_size = [608, 608]
+batch_size = 8
+crop_size = [400, 400]
 print(batch_size, crop_size)
 #End of lines added by Andisheh
 
@@ -123,7 +123,8 @@ def _preprocess_subtract_imagenet_mean(inputs):
 
 def _preprocess_zero_mean_unit_range(inputs):
   """Map image values from [0, 255] to [-1, 1]."""
-#Lines Added by Andisheh
+  return (2.0 / 255.0) * tf.to_float(inputs) - 1.0
+  #Lines Added by Andisheh
   #Input is of shape [batch,height,width,channels]
   print("Andisheh's funciton")
   print(inputs)

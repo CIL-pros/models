@@ -101,8 +101,7 @@ def preprocess_image_and_label(image,
       processed_image, label, scale)
   processed_image.set_shape([None, None, 3])
   
-  #Nikola's random rotate
-  if label is not None:
+  if is_training and label is not None:
     processed_image, label = preprocess_utils.random_rotate(
         [processed_image, label])
 
