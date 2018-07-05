@@ -93,6 +93,16 @@ _ROAD_INFORMATION = DatasetDescriptor(
     ignore_label=255,
 )
 
+_ROAD_AUG_INFORMATION = DatasetDescriptor(
+    splits_to_sizes={
+        'train': 4664,
+        'trainval': 1166,
+        'test': 94
+    },
+    num_classes=2,
+    ignore_label=255,
+)
+
 _PASCAL_VOC_SEG_INFORMATION = DatasetDescriptor(
     splits_to_sizes={
         'train': 1464,
@@ -120,6 +130,7 @@ _DATASETS_INFORMATION = {
     'pascal_voc_seg': _PASCAL_VOC_SEG_INFORMATION,
     'ade20k': _ADE20K_INFORMATION,
     'road_seg': _ROAD_INFORMATION,
+    'road_seg_aug': _ROAD_AUG_INFORMATION,
 }
 
 # Default file pattern of TFRecord of TensorFlow Example.

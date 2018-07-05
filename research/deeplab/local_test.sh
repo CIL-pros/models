@@ -42,14 +42,14 @@ WORK_DIR="${CURRENT_DIR}/deeplab"
 # Go to datasets folder and download PASCAL VOC 2012 segmentation dataset.
 DATASET_DIR="datasets"
 cd "${WORK_DIR}/${DATASET_DIR}"
-sh download_and_convert_road.sh
+# sh download_and_convert_road.sh
 
 # Go back to original directory.
 cd "${CURRENT_DIR}"
 
 # Set up the working directories.
-ROAD_FOLDER="road_seg"
-EXP_FOLDER="exp/train_seg_with_test"
+ROAD_FOLDER="road_seg_aug"
+EXP_FOLDER="exp/aug"
 INIT_FOLDER="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/init_models"
 TRAIN_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/${EXP_FOLDER}/train"
 EVAL_LOGDIR="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/${EXP_FOLDER}/eval"
@@ -74,7 +74,7 @@ ROAD_TEST_DATASET="${WORK_DIR}/${DATASET_DIR}/${ROAD_FOLDER}/tfrecord/test"
 
 # Train 10 iterations.
 NUM_ITERATIONS=100000
-python "${WORK_DIR}"/train.py \
+CUDA_VISIBLE_DEVICES=0 python "${WORK_DIR}"/train.py \
   --logtostderr \
   --train_split="train" \
   --model_variant="xception_65" \
@@ -83,9 +83,9 @@ python "${WORK_DIR}"/train.py \
   --atrous_rates=18 \
   --output_stride=16 \
   --decoder_output_stride=4 \
-  --train_crop_size=608 \
-  --train_crop_size=608 \
-  --train_batch_size=32 \
+  --train_crop_size=400 \
+  --train_crop_size=400 \
+  --train_batch_size=8 \
   --training_number_of_steps="${NUM_ITERATIONS}" \
   --fine_tune_batch_norm=true \
   --tf_initial_checkpoint="${INIT_FOLDER}/deeplabv3_pascal_train_aug/model.ckpt" \
@@ -97,7 +97,7 @@ python "${WORK_DIR}"/train.py \
 # Run evaluation. This performs eval over the full val split (1449 images) and
 # will take a while.
 # Using the provided checkpoint, one should expect mIOU=82.20%.
-python "${WORK_DIR}"/eval.py \
+CUDA_VISIBLE_DEVICES=0 python "${WORK_DIR}"/eval.py \
   --logtostderr \
   --eval_split="trainval" \
   --model_variant="xception_65" \
@@ -106,8 +106,8 @@ python "${WORK_DIR}"/eval.py \
   --atrous_rates=18 \
   --output_stride=16 \
   --decoder_output_stride=4 \
-  --eval_crop_size=608 \
-  --eval_crop_size=608 \
+  --eval_crop_size=400 \
+  --eval_crop_size=400 \
   --checkpoint_dir="${TRAIN_LOGDIR}" \
   --eval_logdir="${EVAL_LOGDIR}" \
   --dataset="${ROAD_FOLDER}" \
@@ -116,9 +116,9 @@ python "${WORK_DIR}"/eval.py \
 
 
 # Visualize the results.
-python "${WORK_DIR}"/vis.py \
+CUDA_VISIBLE_DEVICES=0 python "${WORK_DIR}"/vis.py \
   --logtostderr \
-  --vis_split="train" \
+  --vis_split="test" \
   --model_variant="xception_65" \
   --atrous_rates=6 \
   --atrous_rates=12 \

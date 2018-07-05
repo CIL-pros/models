@@ -141,6 +141,10 @@ def main(unused_argv):
     metric_map = {}
     metric_map[predictions_tag] = tf.metrics.mean_iou(
         predictions, labels, dataset.num_classes, weights=weights)
+    metric_map['precision'] = tf.metrics.precision(
+        predictions, labels, weights=weights)
+    metric_map['recall'] = tf.metrics.recall(
+        predictions, labels, weights=weights)
 
     metrics_to_values, metrics_to_updates = (
         tf.contrib.metrics.aggregate_metric_map(metric_map))
