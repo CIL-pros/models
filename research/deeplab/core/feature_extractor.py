@@ -23,7 +23,7 @@ from nets.mobilenet import mobilenet_v2
 #Lines added by Andisheh
 #import sys, os.path
 #sys.path.append(os.path.abspath('../'))
-#from train import FLAGS
+#from ..train import FLAGS
 #flags = tf.app.flags
 #FLAGS = flags.FLAGS
 #Need to somehow import these two parameteters (batch_size and crop_size) below from train.py file
@@ -128,7 +128,8 @@ def _preprocess_zero_mean_unit_range(inputs):
   #Input is of shape [batch,height,width,channels]
   print("Andisheh's funciton")
   print(inputs)
-  inputs = normalized_inputs =  (2.0 / 255.0) * tf.to_float(inputs) - 1.0
+  normalized_inputs =  (2.0 / 255.0) * tf.to_float(inputs) - 1.0
+  original_inputs = normalized_inputs
   print(normalized_inputs)
   #Create tensor of shape [channel,batch,height,width]
   normalized_inputs = tf.transpose(normalized_inputs,perm = [3,0,1,2])
@@ -136,7 +137,9 @@ def _preprocess_zero_mean_unit_range(inputs):
   #Flatten tensor to create a tensor of shape[channel,batch,height*width]
   normalized_inputs = tf.reshape(normalized_inputs,[3,batch_size,-1]) 
   print(normalized_inputs)
-  D, U, V = tf.svd(normalized_inputs)
+  mean = tf.reduce_mean(normalized_inputs,axis=1 , keepdims=True)
+  print(mean)
+  D, U, V = tf.svd(normalized_inputs-mean)
   print(D,U,V)
   # Here min (batch, height*width ) = batch
   #D is of shape [channel, batch] and contains singular values
@@ -148,12 +151,10 @@ def _preprocess_zero_mean_unit_range(inputs):
   directions = tf.matmul(V,diagonalD)
   print(directions)
   #repeat directions for usage below. directions will be of shape (batch_size,channel,height*width,batch)
-  directions = tf.reshape(tf.tile(directions,[batch_size,1,1]), (3,batch_size,crop_size[0]*crop_size[1],batch_size))
-  print(directions)
-  directions = tf.transpose(directions, [1,0,2,3])
+  directions = tf.reshape(tf.tile(directions,[batch_size,1,1]), (batch_size,3,crop_size[0]*crop_size[1],batch_size))
   print(directions)
   #Create normal vector of shape (batch,channel,batch,1) to multiply directions by
-  normal = tf.random_normal(shape=[batch_size,3,batch_size,1],mean=0.0,stddev=0.1)
+  normal = tf.random_normal(shape=[batch_size,3,batch_size,1],mean=0.0,stddev=sigma)
   print(normal)
   #Remember directions is tensor of shape (batch,channel, height*width, batch)
   noise = tf.squeeze(tf.matmul(directions,normal))
@@ -163,12 +164,12 @@ def _preprocess_zero_mean_unit_range(inputs):
   print(noise)
   #Noise is now of shape (batch, channel, height, width)
   noise = tf.transpose(noise,[0,2,3,1])
-  #Noise is now of shape (batch,hwight,width,channel)
+  #Noise is now of shape (batch,height,width,channel)
   print(noise)
   print(normalized_inputs)
-  inputs = inputs + noise 
+  out = original_inputs + noise 
   print("End of lines added by Andisheh in file feature_extractor.py")
-  return inputs
+  return out
 #End of lines added by Andisheh
 #  return (2.0 / 255.0) * tf.to_float(inputs) - 1.0
 
