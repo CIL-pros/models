@@ -1,3 +1,20 @@
+# DeepLab for Road Segmentation
+
+This repository is set up for training and evaluating the DeepLab v3+ models.
+
+Here are the instructions how to set up the different experiments:
+- No PCA noise:
+    - `cd datasets && ./download_and_convert_road.sh && cd ..`
+    - Open local_test.sh and set `ROAD_FOLDER="road_seg"` instead of `"road_seg_aug"`.
+    - `./local_test.sh`
+- PCA noise augmented dataset:
+    - The conversion script is expecting an `AugmentedDataSet.zip` file in the root folder of our submission. This is done automatically when you run the augmented dataset generation script as described in that subfolder.
+    - The project is currently set such that the sigma for the noise is `1e-3`. In order to change that to `1e-4`, open `datasets/download_and_convert_road_aug.sh` and set `SIGMA="1e-4"`.
+    - `cd datasets && ./download_and_convert_road_aug.sh && cd ..`
+    - `./local_test.sh`
+
+Additionally, you can set different parameters, such as the number of training iterations inside of `local_test.sh`.
+
 # DeepLab: Deep Labelling for Semantic Image Segmentation
 
 DeepLab is a state-of-art deep learning model for semantic image segmentation,
